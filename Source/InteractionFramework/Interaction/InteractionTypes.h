@@ -14,6 +14,13 @@ enum class EInteractionAvailability : uint8
 	Unavailable   UMETA(DisplayName="Unavailable")
 };
 
+UENUM(BlueprintType)
+enum class EInteractionInputType : uint8
+{
+	Press UMETA(DisplayName="Press"),
+	Hold  UMETA(DisplayName="Hold")
+};
+
 /**
  * Result of querying an interactable's current interaction state (primarily for UI/presentation).
  */
@@ -29,9 +36,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bShouldShowPrompt = true;
 	
-	/** Whether the interaction is currently available (for UI). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
-	EInteractionAvailability Availability = EInteractionAvailability::Available;
+	/** Final prompt text to show in the UI. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|UI")
+	FText PromptText;
+
+	/** How the interaction is performed (Press / Hold). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|Input")
+	EInteractionInputType InputType = EInteractionInputType::Press;
+
+	/** Hold duration (only relevant when InputType == Hold). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|Input")
+	float HoldDuration = 0.f;
 
 	/**
 	 * Ordered list of messages describing unmet requirements (e.g., "Requires Red Keycard").
@@ -40,35 +55,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	TArray<FText> UnmetRequirementMessages;
 
-	bool IsAvailable() const
-	{
-		return Availability == EInteractionAvailability::Available;
-	}
-
 	bool ShouldShowPrompt() const
 	{
 		return bShouldShowPrompt;
 	}
 	
 	static FInteractionQueryResult Make(
-		const bool bInShouldShowPrompt,
-		const EInteractionAvailability InAvailability,
-		const TArray<FText>& InUnmetRequirementMessages = TArray<FText>())
+	bool bInShouldShowPrompt,
+	const FText& InPromptText,
+	EInteractionInputType InInputType = EInteractionInputType::Press,
+	float InHoldDuration = 0.f,
+	const TArray<FText>& InUnmetMessages = TArray<FText>())
 	{
 		FInteractionQueryResult Result;
 		Result.bShouldShowPrompt = bInShouldShowPrompt;
-		Result.Availability = InAvailability;
-
-		// Defensive: only carry unmet messages when unavailable.
-		if (InAvailability == EInteractionAvailability::Unavailable)
-		{
-			Result.UnmetRequirementMessages = InUnmetRequirementMessages;
-		}
-		else
-		{
-			Result.UnmetRequirementMessages.Reset();
-		}
-
+		Result.PromptText = InPromptText;
+		Result.InputType = InInputType;
+		Result.HoldDuration = (InInputType == EInteractionInputType::Hold) ? InHoldDuration : 0.f;
+		Result.UnmetRequirementMessages = InUnmetMessages;
 		return Result;
+	}
+
+	bool IsAvailable() const
+	{
+		return UnmetRequirementMessages.Num() == 0;
 	}
 };
