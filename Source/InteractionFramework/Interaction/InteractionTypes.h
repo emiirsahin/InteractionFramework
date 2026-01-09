@@ -33,9 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	EInteractionAvailability Availability = EInteractionAvailability::Available;
 
-	/** Optional reason shown when Availability is Unavailable. */
+	/**
+	 * Ordered list of messages describing unmet requirements (e.g., "Requires Red Keycard").
+	 * Empty when Availability is Available.
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
-	FText UnavailableReason;
+	TArray<FText> UnmetRequirementMessages;
 
 	bool IsAvailable() const
 	{
@@ -48,15 +51,24 @@ public:
 	}
 	
 	static FInteractionQueryResult Make(
-		const bool bInShowPrompt,
+		const bool bInShouldShowPrompt,
 		const EInteractionAvailability InAvailability,
-		const FText& InUnavailableReason = FText::GetEmpty())
+		const TArray<FText>& InUnmetRequirementMessages = TArray<FText>())
 	{
 		FInteractionQueryResult Result;
-		Result.bShouldShowPrompt = bInShowPrompt;
+		Result.bShouldShowPrompt = bInShouldShowPrompt;
 		Result.Availability = InAvailability;
-		Result.UnavailableReason =
-			(InAvailability == EInteractionAvailability::Unavailable) ? InUnavailableReason : FText::GetEmpty();
+
+		// Defensive: only carry unmet messages when unavailable.
+		if (InAvailability == EInteractionAvailability::Unavailable)
+		{
+			Result.UnmetRequirementMessages = InUnmetRequirementMessages;
+		}
+		else
+		{
+			Result.UnmetRequirementMessages.Reset();
+		}
+
 		return Result;
 	}
 };

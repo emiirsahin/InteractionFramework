@@ -45,7 +45,7 @@ public:
 	/**
 	 * Execute an interaction request, result depends on this object.
 	 */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction")
+	UFUNCTION(BlueprintNativeEvent, Category="Interaction")
 	void Interact(AActor* Interactor);
 
 	/** Cosmetic hook called when this object becomes the focused interaction target. */

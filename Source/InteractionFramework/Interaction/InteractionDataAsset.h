@@ -27,6 +27,9 @@ public:
 	/** Display label for UI (e.g., "Red Keycard"). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
 	FText DisplayText;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
+	FText MissingMessage;
 };
 
 /**
