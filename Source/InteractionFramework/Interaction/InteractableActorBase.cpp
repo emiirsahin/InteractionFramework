@@ -1,27 +1,80 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "Interaction/InteractableActorBase.h"
+#include "Interaction/InteractionDataAsset.h"
+#include "Interaction/InteractionTypes.h"
 
-// Sets default values
 AInteractableActorBase::AInteractableActorBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
-void AInteractableActorBase::BeginPlay()
+void AInteractableActorBase::NotifyInteractionStateChanged()
 {
-	Super::BeginPlay();
+	OnInteractionStateChanged.Broadcast();
+}
+
+UInteractionDataAsset* AInteractableActorBase::GetInteractionData_Implementation() const
+{
+	return InteractionData.Get();
+}
+
+FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(AActor* Interactor) const
+{
+	// No interaction data means hide prompt entirely.
+	if (!InteractionData)
+	{
+		return FInteractionQueryResult::Make(
+			false,
+			FText::GetEmpty()
+		);
+	}
+
+	// Resolve UI-facing fields from the DataAsset.
+	const FText PromptText = InteractionData->PrimaryPromptText;
+	const EInteractionInputType InputType = InteractionData->InputType;
+	const float HoldDuration = InteractionData->HoldDuration;
 	
+	if (InteractionData->RequiredKeys.Num() == 0)
+	{
+		return FInteractionQueryResult::Make(
+			true,
+			PromptText,
+			InputType,
+			HoldDuration
+		);
+	}
+
+	// TODO: Replace this temporary behavior with keyring checks against the Interactor.
+	// For now treat all requirements as unmet so UI flow can be tested for the unavailable case.
+	
+	TArray<FText> MissingMessages;
+	MissingMessages.Reserve(InteractionData->RequiredKeys.Num());
+
+	for (const FInteractionKeyRequirement& Requirement : InteractionData->RequiredKeys)
+	{
+		MissingMessages.Add(Requirement.MissingMessage);
+	}
+
+	return FInteractionQueryResult::Make(
+		true,
+		PromptText,
+		InputType,
+		HoldDuration,
+		MissingMessages
+	);
 }
 
-// Called every frame
-void AInteractableActorBase::Tick(float DeltaTime)
+void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 {
-	Super::Tick(DeltaTime);
+	// Interact is always callable; route behavior based on current query result.
+	const FInteractionQueryResult QueryResult = QueryInteraction_Implementation(Interactor);
 
+	if (QueryResult.IsAvailable())
+	{
+		K2_OnInteractAvailable(Interactor);
+	}
+	else
+	{
+		K2_OnInteractUnavailable(Interactor);
+	}
 }
-

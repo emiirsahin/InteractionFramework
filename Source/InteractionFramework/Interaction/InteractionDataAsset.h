@@ -2,14 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Interaction/InteractionTypes.h"
 #include "InteractionDataAsset.generated.h"
-
-UENUM(BlueprintType)
-enum class EInteractionInputType : uint8
-{
-	Press UMETA(DisplayName="Press"),
-	Hold  UMETA(DisplayName="Hold")
-};
 
 /**
  * A single key requirement entry.
@@ -28,6 +22,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
 	FText DisplayText;
 
+	/** Message shown when this key is missing (e.g., "The Red Keycard is missing"). */	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
 	FText MissingMessage;
 };
@@ -50,8 +45,12 @@ public:
 
 	/** Primary prompt text shown to the player ("Open"). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	FText PromptText;
+	FText PrimaryPromptText;
 
+	/** Secondary prompt text shown to the player ("Close"). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
+	FText SecondaryPromptText;
+	
 	/** Whether the interaction is performed by a press or a hold. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Input")
 	EInteractionInputType InputType = EInteractionInputType::Press;
