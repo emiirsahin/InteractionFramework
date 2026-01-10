@@ -2,30 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "Interaction/InteractionTypes.h"
+#include "InteractionTypes.h"
 #include "InteractionDataAsset.generated.h"
-
-/**
- * A single key requirement entry.
- */
-USTRUCT(BlueprintType)
-struct FInteractionKeyRequirement
-{
-	GENERATED_BODY()
-
-public:
-	/** Key identifier required to successfully interact. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
-	FName KeyId;
-
-	/** Display label for UI (e.g., "Red Keycard"). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
-	FText DisplayText;
-
-	/** Message shown when this key is missing (e.g., "The Red Keycard is missing"). */	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
-	FText MissingMessage;
-};
 
 /**
  * UInteractionDataAsset
@@ -65,7 +43,7 @@ public:
 	 * If false, UI should avoid revealing whether the interaction is currently available.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	bool bAllowUIToShow = true;
+	bool bShouldShowPrompt = true;
 
 	/**
 	 * Keys required for successful interaction (AND logic).

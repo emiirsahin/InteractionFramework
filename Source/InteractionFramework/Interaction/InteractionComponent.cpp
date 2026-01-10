@@ -1,13 +1,13 @@
-#include "Interaction/InteractionComponent.h"
 
+#include "InteractionComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
-
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
+#include "KeyringComponent.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -22,6 +22,7 @@ void UInteractionComponent::BeginPlay()
 	Super::BeginPlay();
 
 	InteractorActor = GetOwner();
+	
 	StartFocusScan();
 }
 
@@ -267,7 +268,7 @@ void UInteractionComponent::ExecutePress()
 	
 	IInteractable::Execute_Interact(Target, Interactor);
 
-	// Fallback refresh to correct UI immediately after interaction.
+	// Refresh to correct UI immediately after interaction.
 	RefreshQuery();
 }
 
