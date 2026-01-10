@@ -65,7 +65,7 @@ public:
 	 * If false, UI should avoid revealing whether the interaction is currently available.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	bool bAllowUIToShowAvailability = true;
+	bool bAllowUIToShow = true;
 
 	/**
 	 * Keys required for successful interaction (AND logic).

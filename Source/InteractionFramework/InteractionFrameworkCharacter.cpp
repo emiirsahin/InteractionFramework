@@ -42,6 +42,8 @@ AInteractionFrameworkCharacter::AInteractionFrameworkCharacter()
 	// Configure character movement
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 	GetCharacterMovement()->AirControl = 0.5f;
+
+	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
 }
 
 void AInteractionFrameworkCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -59,6 +61,11 @@ void AInteractionFrameworkCharacter::SetupPlayerInputComponent(UInputComponent* 
 		// Looking/Aiming
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AInteractionFrameworkCharacter::LookInput);
 		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AInteractionFrameworkCharacter::LookInput);
+
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AInteractionFrameworkCharacter::HandleInteractStarted);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AInteractionFrameworkCharacter::HandleInteractCompleted);
+
+		EnhancedInputComponent->BindAction(DebugAction, ETriggerEvent::Started, this, &AInteractionFrameworkCharacter::HandleDebugAction);
 	}
 	else
 	{
@@ -117,4 +124,28 @@ void AInteractionFrameworkCharacter::DoJumpEnd()
 {
 	// pass StopJumping to the character
 	StopJumping();
+}
+
+void AInteractionFrameworkCharacter::HandleInteractStarted(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->BeginInteract();
+	}
+}
+
+void AInteractionFrameworkCharacter::HandleInteractCompleted(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->EndInteract();
+	}
+}
+
+void AInteractionFrameworkCharacter::HandleDebugAction(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->ToggleInteraction();
+	}
 }

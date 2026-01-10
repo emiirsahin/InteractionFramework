@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interaction/InteractionComponent.h"
 #include "Logging/LogMacros.h"
 #include "InteractionFrameworkCharacter.generated.h"
 
@@ -30,7 +31,10 @@ class AInteractionFrameworkCharacter : public ACharacter
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components", meta = (AllowPrivateAccess = "true"))
+	UInteractionComponent* InteractionComponent;
+	
 protected:
 
 	/** Jump Input Action */
@@ -48,6 +52,13 @@ protected:
 	/** Mouse Look Input Action */
 	UPROPERTY(EditAnywhere, Category ="Input")
 	class UInputAction* MouseLookAction;
+
+	UPROPERTY(EditAnywhere, Category ="Input")
+	class UInputAction* InteractAction;
+
+	/** Toggle InteractionComponent */
+	UPROPERTY(EditAnywhere, Category ="Input")
+	class UInputAction* DebugAction;
 	
 public:
 	AInteractionFrameworkCharacter();
@@ -80,8 +91,16 @@ protected:
 
 	/** Set up input action bindings */
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	
 
+	/** Handle Interact Action Press*/
+	void HandleInteractStarted(const FInputActionValue& Value);
+
+	/** Handle Interact Action Release*/
+	void HandleInteractCompleted(const FInputActionValue& Value);
+
+	/** Handle Debug Action Press*/
+	void HandleDebugAction(const FInputActionValue& Value);
+	
 public:
 
 	/** Returns the first person mesh **/

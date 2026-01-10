@@ -33,11 +33,12 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	const FText PromptText = InteractionData->PrimaryPromptText;
 	const EInteractionInputType InputType = InteractionData->InputType;
 	const float HoldDuration = InteractionData->HoldDuration;
+	const bool bShouldShowPrompt = InteractionData->bAllowUIToShow;
 	
 	if (InteractionData->RequiredKeys.Num() == 0)
 	{
 		return FInteractionQueryResult::Make(
-			true,
+			bShouldShowPrompt,
 			PromptText,
 			InputType,
 			HoldDuration
@@ -56,7 +57,7 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	}
 
 	return FInteractionQueryResult::Make(
-		true,
+		bShouldShowPrompt,
 		PromptText,
 		InputType,
 		HoldDuration,
@@ -66,9 +67,9 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 
 void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 {
-	// Interact is always callable; route behavior based on current query result.
+	// Interact is always callable. Route behavior based on current query result.
 	const FInteractionQueryResult QueryResult = QueryInteraction_Implementation(Interactor);
-
+	
 	if (QueryResult.IsAvailable())
 	{
 		K2_OnInteractAvailable(Interactor);
