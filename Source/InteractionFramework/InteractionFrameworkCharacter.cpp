@@ -8,6 +8,8 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Interaction/InteractionComponent.h"
+#include "Interaction/KeyringComponent.h"
 #include "InteractionFramework.h"
 
 AInteractionFrameworkCharacter::AInteractionFrameworkCharacter()
@@ -44,6 +46,7 @@ AInteractionFrameworkCharacter::AInteractionFrameworkCharacter()
 	GetCharacterMovement()->AirControl = 0.5f;
 
 	InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("InteractionComponent"));
+	KeyringComponent = CreateDefaultSubobject<UKeyringComponent>(TEXT("KeyringComponent"));
 }
 
 void AInteractionFrameworkCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

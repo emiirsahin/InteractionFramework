@@ -22,6 +22,28 @@ enum class EInteractionInputType : uint8
 };
 
 /**
+ * A single key requirement entry.
+ */
+USTRUCT(BlueprintType)
+struct FInteractionKeyRequirement
+{
+	GENERATED_BODY()
+
+public:
+	/** Key identifier required to successfully interact. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
+	FName KeyId;
+
+	/** Display label for UI (e.g., "Red Keycard"). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
+	FText DisplayText;
+
+	/** Message shown when this key is missing (e.g., "The Red Keycard is missing"). */	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
+	FText MissingMessage;
+};
+
+/**
  * Result of querying an interactable's current interaction state (primarily for UI/presentation).
  */
 USTRUCT(BlueprintType)

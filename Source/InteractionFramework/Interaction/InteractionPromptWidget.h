@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Interaction/InteractionTypes.h"
 #include "InteractionPromptWidget.generated.h"
 
 /**

@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Interaction/InteractionTypes.h"
+#include "InteractionTypes.h"
 #include "InteractionComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFocusChanged, AActor*, NewFocusedActor, AActor*, PreviousFocusedActor);
@@ -103,7 +103,7 @@ public:
 	// Hold configuration
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Hold")
 	float HoldTickInterval = 0.02f;
-	
+
 private:
 	// Focus scanning
 	void StartFocusScan();

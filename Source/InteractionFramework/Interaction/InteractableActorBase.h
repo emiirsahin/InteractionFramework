@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
 #include "InteractableActorBase.generated.h"
 
 class UInteractionDataAsset;
@@ -59,4 +59,7 @@ protected:
 	/** Called when Interact() is invoked but the interaction is currently unavailable. */
 	UFUNCTION(BlueprintImplementableEvent, Category="Interaction")
 	void K2_OnInteractUnavailable(AActor* Interactor);
+
+	/** Helper to get a list of missing requirement messages for the given keyring. */
+	bool GetMissingRequirementMessages(AActor* Interactor, TArray<FText>& OutMissingMessages) const;
 };

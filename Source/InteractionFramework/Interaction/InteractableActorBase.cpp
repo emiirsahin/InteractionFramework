@@ -1,7 +1,8 @@
 
-#include "Interaction/InteractableActorBase.h"
-#include "Interaction/InteractionDataAsset.h"
-#include "Interaction/InteractionTypes.h"
+#include "InteractableActorBase.h"
+#include "InteractionDataAsset.h"
+#include "InteractionTypes.h"
+#include "KeyringComponent.h"
 
 AInteractableActorBase::AInteractableActorBase()
 {
@@ -20,62 +21,80 @@ UInteractionDataAsset* AInteractableActorBase::GetInteractionData_Implementation
 
 FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(AActor* Interactor) const
 {
-	// No interaction data means hide prompt entirely.
+	FInteractionQueryResult Result{};
+
+	// No data means no prompt
+	if (!InteractionData || !InteractionData->bShouldShowPrompt)
+	{
+		Result.bShouldShowPrompt = false;
+		return Result;
+	}
+
+	// Copy UI info from data asset
+	Result.bShouldShowPrompt = InteractionData->bShouldShowPrompt;
+	Result.PromptText        = InteractionData->PrimaryPromptText;
+	Result.InputType         = InteractionData->InputType;
+	Result.HoldDuration      = InteractionData->HoldDuration;
+
+	// Only do requirement check if there are any requirements
+	if (InteractionData->RequiredKeys.Num() > 0)
+	{
+		GetMissingRequirementMessages(Interactor, Result.UnmetRequirementMessages);
+	}
+
+	return Result;
+}
+
+bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, TArray<FText>& OutMissingMessages) const
+{
+	OutMissingMessages.Reset();
+
 	if (!InteractionData)
 	{
-		return FInteractionQueryResult::Make(
-			false,
-			FText::GetEmpty()
-		);
+		return false;
 	}
 
-	// Resolve UI-facing fields from the DataAsset.
-	const FText PromptText = InteractionData->PrimaryPromptText;
-	const EInteractionInputType InputType = InteractionData->InputType;
-	const float HoldDuration = InteractionData->HoldDuration;
-	const bool bShouldShowPrompt = InteractionData->bAllowUIToShow;
-	
-	if (InteractionData->RequiredKeys.Num() == 0)
+	const TArray<FInteractionKeyRequirement>& Reqs = InteractionData->RequiredKeys;
+	if (Reqs.Num() == 0)
 	{
-		return FInteractionQueryResult::Make(
-			bShouldShowPrompt,
-			PromptText,
-			InputType,
-			HoldDuration
-		);
+		return false;
 	}
 
-	// TODO: Replace this temporary behavior with keyring checks against the Interactor.
-	// For now treat all requirements as unmet so UI flow can be tested for the unavailable case.
-	
-	TArray<FText> MissingMessages;
-	MissingMessages.Reserve(InteractionData->RequiredKeys.Num());
+	const UKeyringComponent* Keyring =
+		Interactor ? Interactor->FindComponentByClass<UKeyringComponent>() : nullptr;
 
-	for (const FInteractionKeyRequirement& Requirement : InteractionData->RequiredKeys)
+	for (const FInteractionKeyRequirement& Req : Reqs)
 	{
-		MissingMessages.Add(Requirement.MissingMessage);
+		if (Req.KeyId.IsNone())
+		{
+			continue;
+		}
+
+		const bool bHasKey = (Keyring && Keyring->HasKey(Req.KeyId));
+		if (!bHasKey)
+		{
+			OutMissingMessages.Add(Req.MissingMessage);
+		}
 	}
 
-	return FInteractionQueryResult::Make(
-		bShouldShowPrompt,
-		PromptText,
-		InputType,
-		HoldDuration,
-		MissingMessages
-	);
+	return OutMissingMessages.Num() > 0;
 }
+
 
 void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 {
-	// Interact is always callable. Route behavior based on current query result.
-	const FInteractionQueryResult QueryResult = QueryInteraction_Implementation(Interactor);
-	
-	if (QueryResult.IsAvailable())
-	{
-		K2_OnInteractAvailable(Interactor);
-	}
-	else
+	// Always allow the attempt, success depends on requirements
+	TArray<FText> Missing;
+	const bool bHasMissing = (InteractionData && InteractionData->RequiredKeys.Num() > 0)
+		? GetMissingRequirementMessages(Interactor, Missing)
+		: false;
+
+	if (bHasMissing)
 	{
 		K2_OnInteractUnavailable(Interactor);
+		return;
 	}
+
+	K2_OnInteractAvailable(Interactor);
 }
+
