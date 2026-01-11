@@ -4,14 +4,78 @@
 #include "InteractionTypes.h"
 #include "KeyringComponent.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogInteractionFramework, Log, All);
+
 AInteractableActorBase::AInteractableActorBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AInteractableActorBase::NotifyInteractionStateChanged()
+void AInteractableActorBase::BeginPlay()
 {
-	OnInteractionStateChanged.Broadcast();
+	Super::BeginPlay();
+	InitializeInteractionState();
+}
+
+void AInteractableActorBase::InitializeInteractionState()
+{
+	if (!InteractionData)
+	{
+		return;
+	}
+	
+	// If state was set in-editor, cache it.
+
+	if (!SetInteractionStateById(CurrentStateId))
+	{
+		if (const FInteractionStateDefinition* DefaultState = InteractionData->GetDefaultState())
+		{
+			SetInteractionStateByDefinition(*DefaultState);
+		}
+		else
+		{
+			LogCachedStateDefNull();
+		}
+	}
+}
+
+bool AInteractableActorBase::SetInteractionStateById(FName NewStateId)
+{
+	return SetInteractionStateInternal(NewStateId, nullptr);
+}
+
+bool AInteractableActorBase::SetInteractionStateByDefinition(const FInteractionStateDefinition& State)
+{
+	return SetInteractionStateInternal(NAME_None, &State);
+}
+
+bool AInteractableActorBase::SetInteractionStateInternal(FName NewStateId, const FInteractionStateDefinition* State)
+{
+	if (State)
+	{
+		CurrentStateId = State->StateId;
+		CachedStateDef = State;
+		return true;
+	}
+
+	if (!NewStateId.IsNone())
+	{
+		if (CurrentStateId == NewStateId && CachedStateDef)
+		{
+			return true;
+		}
+
+		if (!InteractionData) return false; // Can not check if the provided new state id exists.
+
+		if (const FInteractionStateDefinition* NewState = InteractionData->FindStateById(NewStateId))
+		{
+			CurrentStateId = NewState->StateId;
+			CachedStateDef = NewState;
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 UInteractionDataAsset* AInteractableActorBase::GetInteractionData_Implementation() const
@@ -24,20 +88,20 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	FInteractionQueryResult Result{};
 
 	// No data means no prompt
-	if (!InteractionData || !InteractionData->bShouldShowPrompt)
+	if (!InteractionData || !CachedStateDef)
 	{
 		Result.bShouldShowPrompt = false;
 		return Result;
 	}
 
 	// Copy UI info from data asset
-	Result.bShouldShowPrompt = InteractionData->bShouldShowPrompt;
-	Result.PromptText        = InteractionData->PrimaryPromptText;
-	Result.InputType         = InteractionData->InputType;
-	Result.HoldDuration      = InteractionData->HoldDuration;
+	Result.bShouldShowPrompt = InteractionData->ShouldShowPromptForState(*CachedStateDef);
+	Result.PromptText        = CachedStateDef->PromptText;
+	Result.InputType         = CachedStateDef->InputType;
+	Result.HoldDuration      = CachedStateDef->HoldDuration;
 
 	// Only do requirement check if there are any requirements
-	if (InteractionData->RequiredKeys.Num() > 0)
+	if (CachedStateDef->RequiredKeys.Num() > 0)
 	{
 		GetMissingRequirementMessages(Interactor, Result.UnmetRequirementMessages);
 	}
@@ -49,12 +113,12 @@ bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, T
 {
 	OutMissingMessages.Reset();
 
-	if (!InteractionData)
+	if (!CachedStateDef)
 	{
 		return false;
 	}
-
-	const TArray<FInteractionKeyRequirement>& Reqs = InteractionData->RequiredKeys;
+	
+	const TArray<FInteractionKeyRequirement>& Reqs = CachedStateDef->RequiredKeys;
 	if (Reqs.Num() == 0)
 	{
 		return false;
@@ -83,18 +147,25 @@ bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, T
 
 void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 {
+	if (!InteractionData || !CachedStateDef)
+	{
+		LogCachedStateDefNull();
+		return;
+	}
 	// Always allow the attempt, success depends on requirements
 	TArray<FText> Missing;
-	const bool bHasMissing = (InteractionData && InteractionData->RequiredKeys.Num() > 0)
-		? GetMissingRequirementMessages(Interactor, Missing)
-		: false;
+	const bool bHasMissing = GetMissingRequirementMessages(Interactor, Missing);
 
 	if (bHasMissing)
 	{
-		K2_OnInteractUnavailable(Interactor);
+		K2_OnInteractUnavailable(Interactor, Missing);
 		return;
 	}
 
 	K2_OnInteractAvailable(Interactor);
 }
 
+void AInteractableActorBase::LogCachedStateDefNull()
+{
+	UE_LOG(LogInteractionFramework, Error, TEXT("CachedStateDef is null."));
+}

@@ -8,8 +8,6 @@
 
 class UInteractionDataAsset;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionStateChanged);
-
 /**
  * AInteractableActorBase
  *
@@ -29,37 +27,46 @@ class INTERACTIONFRAMEWORK_API AInteractableActorBase
 public:
 	AInteractableActorBase();
 
-	/** Static configuration of this interaction. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
-	TObjectPtr<UInteractionDataAsset> InteractionData;
+	virtual void BeginPlay() override;
 
-	/**
-	 * Fired when this interactable's runtime state changes in a way that may
-	 * affect QueryInteraction results (e.g., unlocked, enabled, opened/closed).
-	 */
-	UPROPERTY(BlueprintAssignable, Category="Interaction")
-	FOnInteractionStateChanged OnInteractionStateChanged;
-
-protected:
-	/** Notify listeners that interaction state has changed. */
-	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void NotifyInteractionStateChanged();
-
-public:
 	// IInteractable
 	virtual UInteractionDataAsset* GetInteractionData_Implementation() const override;
 	virtual FInteractionQueryResult QueryInteraction_Implementation(AActor* Interactor) const override;
 	virtual void Interact_Implementation(AActor* Interactor) override;
 
+	UFUNCTION(BlueprintCallable, Category="Interaction")
+	bool SetInteractionStateById(FName NewStateId);
+
+	UFUNCTION(BlueprintCallable, Category="Interaction")
+	bool SetInteractionStateByDefinition(const FInteractionStateDefinition& State);
+
+public:
+	/** Static configuration of this interaction. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
+	TObjectPtr<UInteractionDataAsset> InteractionData;
+	
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interaction")
+	FName CurrentStateId = NAME_None;
+
+	/** Pointer into the current state. */
+	const FInteractionStateDefinition* CachedStateDef = nullptr;
+	
+protected:
+	void InitializeInteractionState();
+	
 	/** Called when Interact() is invoked and the interaction is currently available. */
 	UFUNCTION(BlueprintImplementableEvent, Category="Interaction")
 	void K2_OnInteractAvailable(AActor* Interactor);
 
 	/** Called when Interact() is invoked but the interaction is currently unavailable. */
 	UFUNCTION(BlueprintImplementableEvent, Category="Interaction")
-	void K2_OnInteractUnavailable(AActor* Interactor);
+	void K2_OnInteractUnavailable(AActor* Interactor, const TArray<FText>& MissingMessages);
 
 	/** Helper to get a list of missing requirement messages for the given keyring. */
 	bool GetMissingRequirementMessages(AActor* Interactor, TArray<FText>& OutMissingMessages) const;
+
+	bool SetInteractionStateInternal(FName NewStateId, const FInteractionStateDefinition* State);
+
+	static void LogCachedStateDefNull();
 };
