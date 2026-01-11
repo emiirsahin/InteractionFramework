@@ -11,6 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoldProgress, float, NormalizedPr
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldCanceled);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldCompleted);
 
+class IInteractable;
 /**
  * UInteractionComponent
  *
@@ -110,10 +111,10 @@ private:
 	void StopFocusScan();
 	void PerformFocusScan();
 
-	bool FindInteractableInView(AActor*& OutActor) const;
+	bool FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable) const;
 	bool GetViewPoint(FVector& OutViewLoc, FRotator& OutViewRot) const;
 
-	void SetFocused(AActor* NewActor);
+	void SetFocused(AActor* NewActor, const TScriptInterface<IInteractable> NewInteractable);
 	void ClearFocus();
 	void RefreshQuery();
 
@@ -129,7 +130,8 @@ private:
 private:
 	TWeakObjectPtr<AActor> InteractorActor;
 	TWeakObjectPtr<AActor> FocusedActor;
-
+	TScriptInterface<IInteractable> FocusedInteractable;
+	
 	FInteractionQueryResult CachedQueryResult;
 
 	FTimerHandle FocusScanTimer;

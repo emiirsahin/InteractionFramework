@@ -7,7 +7,6 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Interactable.h"
-#include "KeyringComponent.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -68,7 +67,8 @@ void UInteractionComponent::PerformFocusScan()
 	if (!bEnabled) return;
 	
 	AActor* NewActor = nullptr;
-	const bool bFound = FindInteractableInView(NewActor);
+	TScriptInterface<IInteractable> NewInteractable;
+	const bool bFound = FindInteractableInView(NewActor, NewInteractable);
 
 	// Lost focus
 	if (!bFound)
@@ -83,7 +83,7 @@ void UInteractionComponent::PerformFocusScan()
 	// Focus changed
 	if (FocusedActor.Get() != NewActor)
 	{
-		SetFocused(NewActor);
+		SetFocused(NewActor, NewInteractable);
 		return;
 	}
 
@@ -119,9 +119,10 @@ bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewR
 	return false;
 }
 
-bool UInteractionComponent::FindInteractableInView(AActor*& OutActor) const
+bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable) const
 {
 	OutActor = nullptr;
+	OutInteractable = nullptr;
 
 	UWorld* World = GetWorld();
 	if (!World) return false;
@@ -164,22 +165,35 @@ bool UInteractionComponent::FindInteractableInView(AActor*& OutActor) const
 	AActor* HitActor = Hit.GetActor();
 	if (!IsValid(HitActor)) return false;
 
-	if (HitActor->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
-	{
-		OutActor = HitActor;
-		return true;
-	}
+	if (!HitActor->GetClass()->ImplementsInterface(UInteractable::StaticClass())) return false;
 
-	return false;
+	OutActor = HitActor;
+	
+	OutInteractable.SetObject(HitActor);
+	OutInteractable.SetInterface(Cast<IInteractable>(HitActor));
+	
+	return true;
 }
 
-void UInteractionComponent::SetFocused(AActor* NewActor)
+void UInteractionComponent::SetFocused(AActor* NewActor, const TScriptInterface<IInteractable> NewInteractable)
 {
 	CancelHold();
 
 	AActor* Prev = FocusedActor.Get();
-	FocusedActor = NewActor;
 
+	if (IsValid(Prev) && Prev->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+	{
+		IInteractable::Execute_OnFocusEnd(Prev, InteractorActor.Get());
+	}
+	
+	FocusedActor = NewActor;
+	FocusedInteractable = NewInteractable;
+
+	if (IsValid(NewActor))
+	{
+		IInteractable::Execute_OnFocusStart(NewActor, InteractorActor.Get());
+	}
+	
 	RefreshQuery();
 	OnFocusChanged.Broadcast(NewActor, Prev);
 }
@@ -189,8 +203,15 @@ void UInteractionComponent::ClearFocus()
 	CancelHold();
 
 	AActor* Prev = FocusedActor.Get();
-	FocusedActor = nullptr;
 
+	if (IsValid(Prev) && Prev->GetClass()->ImplementsInterface(UInteractable::StaticClass()))
+	{
+		IInteractable::Execute_OnFocusEnd(Prev, InteractorActor.Get());
+	}
+	
+	FocusedActor = nullptr;
+	FocusedInteractable = nullptr;
+	
 	// Clear query for no prompt
 	CachedQueryResult = FInteractionQueryResult{};
 	CachedQueryResult.bShouldShowPrompt = false;
