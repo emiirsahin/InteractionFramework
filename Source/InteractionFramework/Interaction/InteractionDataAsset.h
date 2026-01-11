@@ -17,41 +17,77 @@ class INTERACTIONFRAMEWORK_API UInteractionDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	/** Optional label for the target ("Door"). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
+	/** Name of the interactable object (Door, Chest, NPC, etc.). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
 	FText DisplayName;
 
-	/** Primary prompt text shown to the player ("Open"). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	FText PrimaryPromptText;
+	/** How prompts should be shown across all states. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
+	EInteractionPromptOverride PromptOverridePolicy = EInteractionPromptOverride::UsePerState;
 
-	/** Secondary prompt text shown to the player ("Close"). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	FText SecondaryPromptText;
+	/**
+	 * Default state used when the actor has not set a state or the requested state isn't found.
+	 * If None, and the State list is not empty, the first entry in States is used.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
+	FName DefaultStateId = NAME_None;
+
+	/** All possible interaction states for this interactable type. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
+	TArray<FInteractionStateDefinition> States;
+
+public:
+	/** Finds a state by id. Returns null if not found. */
+	const FInteractionStateDefinition* FindStateById(FName StateId) const
+	{
+		for (const FInteractionStateDefinition& State : States)
+		{
+			if (State.StateId == StateId)
+			{
+				return &State;
+			}
+		}
+		return nullptr;
+	}
+
+	/** Returns the default state definition (may be null if none defined). */
+	const FInteractionStateDefinition* GetDefaultState() const
+	{
+		// If DefaultStateId is set, try it first
+		if (!DefaultStateId.IsNone())
+		{
+			if (const FInteractionStateDefinition* Found = FindStateById(DefaultStateId))
+			{
+				return Found;
+			}
+		}
+
+		// This happens by default through data validation, but still a good check to keep
+		// Otherwise fall back to first entry
+		return (States.Num() > 0) ? &States[0] : nullptr;
+	}
 	
-	/** Whether the interaction is performed by a press or a hold. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Input")
-	EInteractionInputType InputType = EInteractionInputType::Press;
-
-	/** Hold duration in seconds (only used when InputType == Hold). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Input",
-		meta=(ClampMin="0.0", EditCondition="InputType == EInteractionInputType::Hold", EditConditionHides))
-	float HoldDuration = 0.5f;
-
-	/**
-	 * If true, UI may show availability state / missing requirements (e.g., greyed out + requirements list).
-	 * If false, UI should avoid revealing whether the interaction is currently available.
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|UI")
-	bool bShouldShowPrompt = true;
-
-	/**
-	 * Keys required for successful interaction (AND logic).
-	 * The list order is preserved for UI presentation.
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Requirements")
-	TArray<FInteractionKeyRequirement> RequiredKeys;
-
-	UFUNCTION(BlueprintPure, Category="Interaction|Input")
-	bool IsHoldInteraction() const { return InputType == EInteractionInputType::Hold; }
+	bool ShouldShowPromptForState(const FInteractionStateDefinition& State) const
+	{
+		switch (PromptOverridePolicy)
+		{
+		case EInteractionPromptOverride::ForceShow:
+			return true;
+		case EInteractionPromptOverride::ForceHide:
+			return false;
+		case EInteractionPromptOverride::UsePerState:
+		default:
+			return State.bShouldShowPrompt;
+		}
+	}
+	
+	static bool IsHoldInteraction(const FInteractionStateDefinition& State)
+	{
+		return State.InputType == EInteractionInputType::Hold;
+	}
+	
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };
