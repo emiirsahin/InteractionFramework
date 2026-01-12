@@ -26,15 +26,13 @@ class UInteractable : public UInterface
  * those concerns are managed externally by the interaction system, and mainly the interaction component.
  */
 
+DEFINE_LOG_CATEGORY_STATIC(LogInteractionFramework, Log, All);
+
 class INTERACTIONFRAMEWORK_API IInteractable
 {
 	GENERATED_BODY()
 
 public:
-	/** Returns the data describing how this interaction is presented in UI. */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Interaction")
-	UInteractionDataAsset* GetInteractionData() const;
-
 	/**
 	 * Returns current interaction state for UI presentation.
 	 * Must stay lightweight and safe.

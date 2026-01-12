@@ -32,48 +32,6 @@ public:
 	FText MissingMessage;
 };
 
-/** Prompt visibility for an interaction object */
-UENUM(BlueprintType)
-enum class EInteractionPromptOverride : uint8
-{
-	UsePerState UMETA(DisplayName="Use Per-State"),
-	ForceShow   UMETA(DisplayName="Force Show"),
-	ForceHide   UMETA(DisplayName="Force Hide"),
-};
-
-/**
- * Describes a single interaction "state" for an interactable object.
- * The owning actor keeps current StateId is.
- */
-USTRUCT(BlueprintType)
-struct FInteractionStateDefinition
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
-	FName StateId = NAME_None;
-
-	/** What the interaction prompt says for this state (e.g. Open, Close, Unlock). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
-	FText PromptText;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
-	EInteractionInputType InputType = EInteractionInputType::Press;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State", meta=(ClampMin="0.0"))
-	float HoldDuration = 0.0f;
-
-	/** Requirements for this state (AND logic between keys). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
-	TArray<FInteractionKeyRequirement> RequiredKeys;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
-	bool bShouldShowPrompt = true;
-
-	/** State is valid if it has a non-None id. */
-	bool IsValid() const { return !StateId.IsNone(); }
-};
-
 /**
  * Result of querying an interactable's current interaction state (primarily for UI/presentation).
  */
