@@ -30,12 +30,12 @@ public:
 	virtual void BeginPlay() override;
 
 	// IInteractable
-	virtual UInteractionDataAsset* GetInteractionData_Implementation() const override;
 	virtual FInteractionQueryResult QueryInteraction_Implementation(AActor* Interactor) const override;
 	virtual void Interact_Implementation(AActor* Interactor) override;
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
 	bool SetInteractionState(FName NewStateId);
+	
 public:
 	/** Static configuration of this interaction. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
@@ -65,5 +65,8 @@ protected:
 
 	bool CacheStateFromId(FName StateId);
 	
-	static void LogCachedStateDefNull();
+	static void LogCachedStateDefNull()
+	{
+		UE_LOG(LogInteractionFramework, Error, TEXT("CachedStateDef is null."));
+	}
 };

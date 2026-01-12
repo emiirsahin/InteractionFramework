@@ -4,8 +4,6 @@
 #include "InteractionTypes.h"
 #include "KeyringComponent.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogInteractionFramework, Log, All);
-
 AInteractableActorBase::AInteractableActorBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -55,11 +53,6 @@ bool AInteractableActorBase::SetInteractionState(FName NewStateId)
 	}
 	
 	return false;
-}
-
-UInteractionDataAsset* AInteractableActorBase::GetInteractionData_Implementation() const
-{
-	return InteractionData.Get();
 }
 
 FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(AActor* Interactor) const
@@ -159,10 +152,4 @@ bool AInteractableActorBase::CacheStateFromId(FName StateId)
 	}
 
 	return false;
-}
-
-
-void AInteractableActorBase::LogCachedStateDefNull()
-{
-	UE_LOG(LogInteractionFramework, Error, TEXT("CachedStateDef is null."));
 }

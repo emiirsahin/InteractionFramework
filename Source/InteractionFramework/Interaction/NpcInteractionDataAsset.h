@@ -24,15 +24,20 @@ public:
 	FName StateId = NAME_None;
 
 	/** Dialogue line when the interaction is fired while requirements of this state are not met. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|Dialogue")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
 	FText LineIfMissing;
 	/** Dialogue line when the interaction is fired while requirements of this state are met. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|Dialogue")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
 	FText LineIfMet;
 
 	/** Keys required for this state's "met" outcome (AND logic). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|Requirements")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
 	TArray<FInteractionKeyRequirement> RequiredKeys;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
+	float SpeechWidgetVisibleTime;
+
+	bool IsValid() const { return !StateId.IsNone(); }
 };
 
 /**
@@ -87,7 +92,7 @@ public:
 		// Otherwise fall back to first entry
 		return (States.Num() > 0) ? States[0].StateId : NAME_None;
 	}
-
+	
 #if WITH_EDITOR
 	virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
