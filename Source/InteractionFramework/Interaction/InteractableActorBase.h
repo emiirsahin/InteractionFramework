@@ -35,11 +35,7 @@ public:
 	virtual void Interact_Implementation(AActor* Interactor) override;
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	bool SetInteractionStateById(FName NewStateId);
-
-	UFUNCTION(BlueprintCallable, Category="Interaction")
-	bool SetInteractionStateByDefinition(const FInteractionStateDefinition& State);
-
+	bool SetInteractionState(FName NewStateId);
 public:
 	/** Static configuration of this interaction. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction")
@@ -50,7 +46,8 @@ protected:
 	FName CurrentStateId = NAME_None;
 
 	/** Pointer into the current state. */
-	const FInteractionStateDefinition* CachedStateDef = nullptr;
+	UPROPERTY(Transient)
+	FInteractionStateDefinition CurrentState;
 	
 protected:
 	void InitializeInteractionState();
@@ -66,7 +63,7 @@ protected:
 	/** Helper to get a list of missing requirement messages for the given keyring. */
 	bool GetMissingRequirementMessages(AActor* Interactor, TArray<FText>& OutMissingMessages) const;
 
-	bool SetInteractionStateInternal(FName NewStateId, const FInteractionStateDefinition* State);
-
+	bool CacheStateFromId(FName StateId);
+	
 	static void LogCachedStateDefNull();
 };

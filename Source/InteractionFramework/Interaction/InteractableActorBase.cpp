@@ -26,51 +26,30 @@ void AInteractableActorBase::InitializeInteractionState()
 	
 	// If state was set in-editor, cache it.
 
-	if (!SetInteractionStateById(CurrentStateId))
+	if (!SetInteractionState(CurrentStateId))
 	{
-		if (const FInteractionStateDefinition* DefaultState = InteractionData->GetDefaultState())
-		{
-			SetInteractionStateByDefinition(*DefaultState);
-		}
-		else
+		if (!SetInteractionState(InteractionData->GetDefaultStateId()))
 		{
 			LogCachedStateDefNull();
 		}
 	}
 }
 
-bool AInteractableActorBase::SetInteractionStateById(FName NewStateId)
+bool AInteractableActorBase::SetInteractionState(FName NewStateId)
 {
-	return SetInteractionStateInternal(NewStateId, nullptr);
-}
-
-bool AInteractableActorBase::SetInteractionStateByDefinition(const FInteractionStateDefinition& State)
-{
-	return SetInteractionStateInternal(NAME_None, &State);
-}
-
-bool AInteractableActorBase::SetInteractionStateInternal(FName NewStateId, const FInteractionStateDefinition* State)
-{
-	if (State)
-	{
-		CurrentStateId = State->StateId;
-		CachedStateDef = State;
-		return true;
-	}
+	if (!InteractionData) return false;
 
 	if (!NewStateId.IsNone())
 	{
-		if (CurrentStateId == NewStateId && CachedStateDef)
+		if (CurrentStateId == NewStateId && CurrentState.IsValid())
 		{
 			return true;
 		}
 
 		if (!InteractionData) return false; // Can not check if the provided new state id exists.
 
-		if (const FInteractionStateDefinition* NewState = InteractionData->FindStateById(NewStateId))
+		if (CacheStateFromId(NewStateId))
 		{
-			CurrentStateId = NewState->StateId;
-			CachedStateDef = NewState;
 			return true;
 		}
 	}
@@ -88,20 +67,20 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	FInteractionQueryResult Result{};
 
 	// No data means no prompt
-	if (!InteractionData || !CachedStateDef)
+	if (!InteractionData || !CurrentState.IsValid())
 	{
 		Result.bShouldShowPrompt = false;
 		return Result;
 	}
 
 	// Copy UI info from data asset
-	Result.bShouldShowPrompt = InteractionData->ShouldShowPromptForState(*CachedStateDef);
-	Result.PromptText        = CachedStateDef->PromptText;
-	Result.InputType         = CachedStateDef->InputType;
-	Result.HoldDuration      = CachedStateDef->HoldDuration;
+	Result.bShouldShowPrompt = InteractionData->ShouldShowPromptForState(CurrentState);
+	Result.PromptText        = CurrentState.PromptText;
+	Result.InputType         = CurrentState.InputType;
+	Result.HoldDuration      = CurrentState.HoldDuration;
 
 	// Only do requirement check if there are any requirements
-	if (CachedStateDef->RequiredKeys.Num() > 0)
+	if (CurrentState.RequiredKeys.Num() > 0)
 	{
 		GetMissingRequirementMessages(Interactor, Result.UnmetRequirementMessages);
 	}
@@ -113,12 +92,12 @@ bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, T
 {
 	OutMissingMessages.Reset();
 
-	if (!CachedStateDef)
+	if (!CurrentState.IsValid())
 	{
 		return false;
 	}
 	
-	const TArray<FInteractionKeyRequirement>& Reqs = CachedStateDef->RequiredKeys;
+	const TArray<FInteractionKeyRequirement>& Reqs = CurrentState.RequiredKeys;
 	if (Reqs.Num() == 0)
 	{
 		return false;
@@ -147,7 +126,7 @@ bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, T
 
 void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 {
-	if (!InteractionData || !CachedStateDef)
+	if (!InteractionData || !CurrentState.IsValid())
 	{
 		LogCachedStateDefNull();
 		return;
@@ -164,6 +143,24 @@ void AInteractableActorBase::Interact_Implementation(AActor* Interactor)
 
 	K2_OnInteractAvailable(Interactor);
 }
+
+bool AInteractableActorBase::CacheStateFromId(FName StateId)
+{
+	if (!InteractionData || StateId.IsNone())
+	{
+		return false;
+	}
+
+	if (const FInteractionStateDefinition* Found = InteractionData->FindStateById(StateId))
+	{
+		CurrentState = *Found;
+		CurrentStateId = StateId;
+		return true;
+	}
+
+	return false;
+}
+
 
 void AInteractableActorBase::LogCachedStateDefNull()
 {

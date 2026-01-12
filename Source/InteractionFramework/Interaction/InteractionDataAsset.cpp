@@ -17,10 +17,6 @@ EDataValidationResult UInteractionDataAsset::IsDataValid(FDataValidationContext&
 	auto AddWarning = [&](const FString& Msg)
 	{
 		Context.AddWarning(FText::FromString(Msg));
-		if (Result == EDataValidationResult::Valid)
-		{
-			Result = EDataValidationResult::Valid;
-		}
 	};
 
 	if (States.Num() == 0)

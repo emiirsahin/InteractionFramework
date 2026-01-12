@@ -51,20 +51,20 @@ public:
 	}
 
 	/** Returns the default state definition (may be null if none defined). */
-	const FInteractionStateDefinition* GetDefaultState() const
+	const FName GetDefaultStateId() const
 	{
 		// If DefaultStateId is set, try it first
 		if (!DefaultStateId.IsNone())
 		{
 			if (const FInteractionStateDefinition* Found = FindStateById(DefaultStateId))
 			{
-				return Found;
+				return Found->StateId;
 			}
 		}
 
 		// This happens by default through data validation, but still a good check to keep
 		// Otherwise fall back to first entry
-		return (States.Num() > 0) ? &States[0] : nullptr;
+		return (States.Num() > 0) ? States[0].StateId : NAME_None;
 	}
 	
 	bool ShouldShowPromptForState(const FInteractionStateDefinition& State) const

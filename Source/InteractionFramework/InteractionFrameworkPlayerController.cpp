@@ -93,7 +93,7 @@ void AInteractionFrameworkPlayerController::BindToInteractionComponent(UInteract
 	CachedInteractionComponent->OnFocusChanged.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleFocusChanged);
 	CachedInteractionComponent->OnQueryUpdated.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleQueryUpdated);
 	CachedInteractionComponent->OnHoldProgress.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldProgress);
-	CachedInteractionComponent->OnHoldCanceled.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldCanceled);
+	CachedInteractionComponent->OnHoldReset.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldReset);
 	CachedInteractionComponent->OnHoldCompleted.AddDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldCompleted);
 
 	// Initialize UI with current state.
@@ -107,7 +107,7 @@ void AInteractionFrameworkPlayerController::UnbindFromInteractionComponent()
 	CachedInteractionComponent->OnFocusChanged.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleFocusChanged);
 	CachedInteractionComponent->OnQueryUpdated.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleQueryUpdated);
 	CachedInteractionComponent->OnHoldProgress.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldProgress);
-	CachedInteractionComponent->OnHoldCanceled.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldCanceled);
+	CachedInteractionComponent->OnHoldReset.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldReset);
 	CachedInteractionComponent->OnHoldCompleted.RemoveDynamic(this, &AInteractionFrameworkPlayerController::HandleHoldCompleted);
 
 	CachedInteractionComponent = nullptr;
@@ -156,7 +156,7 @@ void AInteractionFrameworkPlayerController::HandleHoldProgress(float Progress)
 	PromptWidget->BP_SetHoldProgress(Progress);
 }
 
-void AInteractionFrameworkPlayerController::HandleHoldCanceled()
+void AInteractionFrameworkPlayerController::HandleHoldReset()
 {
 	if (!PromptWidget) return;
 	PromptWidget->BP_SetHoldProgress(0.f);

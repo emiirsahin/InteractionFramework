@@ -28,7 +28,7 @@ void UInteractionComponent::BeginPlay()
 void UInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	StopFocusScan();
-	CancelHold();
+	ResetHold();
 	ClearFocus();
 
 	Super::EndPlay(EndPlayReason);
@@ -84,11 +84,7 @@ void UInteractionComponent::PerformFocusScan()
 	if (FocusedActor.Get() != NewActor)
 	{
 		SetFocused(NewActor, NewInteractable);
-		return;
 	}
-
-	// To keep UI correct if the state of the object changes.
-	RefreshQuery();
 }
 
 bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewRot) const
@@ -177,7 +173,7 @@ bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInt
 
 void UInteractionComponent::SetFocused(AActor* NewActor, const TScriptInterface<IInteractable> NewInteractable)
 {
-	CancelHold();
+	ResetHold();
 
 	AActor* Prev = FocusedActor.Get();
 
@@ -200,7 +196,7 @@ void UInteractionComponent::SetFocused(AActor* NewActor, const TScriptInterface<
 
 void UInteractionComponent::ClearFocus()
 {
-	CancelHold();
+	ResetHold();
 
 	AActor* Prev = FocusedActor.Get();
 
@@ -274,7 +270,7 @@ void UInteractionComponent::EndInteract()
 	
 	if (bIsHolding)
 	{
-		CancelHold();
+		ResetHold();
 	}
 }
 
@@ -328,7 +324,7 @@ void UInteractionComponent::TickHold()
 	// Focus lost while holding
 	if (!FocusedActor.IsValid())
 	{
-		CancelHold();
+		ResetHold();
 		return;
 	}
 
@@ -349,13 +345,13 @@ void UInteractionComponent::CompleteHold()
 		return;
 	}
 
-	CancelHold();
+	ResetHold();
 	OnHoldCompleted.Broadcast();
 
 	ExecutePress();
 }
 
-void UInteractionComponent::CancelHold()
+void UInteractionComponent::ResetHold()
 {
 	if (!bIsHolding)
 	{
@@ -372,7 +368,7 @@ void UInteractionComponent::CancelHold()
 	}
 
 	OnHoldProgress.Broadcast(0.f);
-	OnHoldCanceled.Broadcast();
+	OnHoldReset.Broadcast();
 }
 
 void UInteractionComponent::EnableInteraction()
@@ -398,7 +394,7 @@ void UInteractionComponent::DisableInteraction()
 	bEnabled = false;
 
 	StopFocusScan();
-	CancelHold();
+	ResetHold();
 	ClearFocus();
 }
 

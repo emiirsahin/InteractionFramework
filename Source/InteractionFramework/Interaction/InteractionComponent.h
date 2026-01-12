@@ -8,7 +8,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFocusChanged, AActor*, NewFocusedActor, AActor*, PreviousFocusedActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQueryUpdated, const FInteractionQueryResult&, QueryResult);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHoldProgress, float, NormalizedProgress);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldCanceled);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldReset);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldCompleted);
 
 class IInteractable;
@@ -45,7 +45,7 @@ public:
 	FOnHoldProgress OnHoldProgress;
 
 	UPROPERTY(BlueprintAssignable, Category="Interaction|Events")
-	FOnHoldCanceled OnHoldCanceled;
+	FOnHoldReset OnHoldReset;
 
 	UPROPERTY(BlueprintAssignable, Category="Interaction|Events")
 	FOnHoldCompleted OnHoldCompleted;
@@ -125,7 +125,7 @@ private:
 	void BeginHold(float DurationSeconds);
 	void TickHold();
 	void CompleteHold();
-	void CancelHold();
+	void ResetHold();
 
 private:
 	TWeakObjectPtr<AActor> InteractorActor;

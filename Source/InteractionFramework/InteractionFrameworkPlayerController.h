@@ -70,7 +70,7 @@ private:
 	void HandleHoldProgress(float Progress);
 
 	UFUNCTION()
-	void HandleHoldCanceled();
+	void HandleHoldReset();
 
 	UFUNCTION()
 	void HandleHoldCompleted();

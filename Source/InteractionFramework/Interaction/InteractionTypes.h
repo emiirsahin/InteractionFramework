@@ -3,17 +3,6 @@
 #include "CoreMinimal.h"
 #include "InteractionTypes.generated.h"
 
-/**
- * High-level availability state for an interaction target.
- * Note: Interaction may still be attempted even when unavailable; this is primarily for UI/presentation.
- */
-UENUM(BlueprintType)
-enum class EInteractionAvailability : uint8
-{
-	Available     UMETA(DisplayName="Available"),
-	Unavailable   UMETA(DisplayName="Unavailable")
-};
-
 UENUM(BlueprintType)
 enum class EInteractionInputType : uint8
 {
@@ -97,26 +86,26 @@ public:
 	/**
 	 * Whether the interaction prompt should be shown at all.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction")
 	bool bShouldShowPrompt = true;
 	
 	/** Final prompt text to show in the UI. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|UI")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction|UI")
 	FText PromptText;
 
 	/** How the interaction is performed (Press / Hold). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|Input")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction|Input")
 	EInteractionInputType InputType = EInteractionInputType::Press;
 
 	/** Hold duration (only relevant when InputType == Hold). */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction|Input")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction|Input")
 	float HoldDuration = 0.f;
 
 	/**
 	 * Ordered list of messages describing unmet requirements (e.g., "Requires Red Keycard").
 	 * Empty when Availability is Available.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Interaction")
 	TArray<FText> UnmetRequirementMessages;
 
 	bool ShouldShowPrompt() const
