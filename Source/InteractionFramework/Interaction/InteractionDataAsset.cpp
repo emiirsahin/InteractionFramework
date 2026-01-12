@@ -1,7 +1,8 @@
 ﻿
+#include "InteractionDataAsset.h"
+
 #if WITH_EDITOR
 
-#include "InteractionDataAsset.h"
 #include "Misc/DataValidation.h"
 
 EDataValidationResult UInteractionDataAsset::IsDataValid(FDataValidationContext& Context) const
@@ -55,14 +56,29 @@ EDataValidationResult UInteractionDataAsset::IsDataValid(FDataValidationContext&
 		{
 			AddWarning(FString::Printf(TEXT("State '%s' is Hold but HoldDuration <= 0."), *State.StateId.ToString()));
 		}
-
+		
+		TSet<FName> SeenKeyIds;
 		for (int32 r = 0; r < State.RequiredKeys.Num(); ++r)
 		{
 			const FInteractionKeyRequirement& Req = State.RequiredKeys[r];
+			
 			if (Req.KeyId.IsNone())
 			{
 				AddError(FString::Printf(TEXT("State '%s' RequiredKeys[%d] has KeyId == None."), *State.StateId.ToString(), r));
+				continue;
 			}
+	
+			if (SeenKeyIds.Contains(Req.KeyId))
+			{
+				AddError(FString::Printf(
+					TEXT("States[%d] has duplicate RequiredKeys with KeyId '%s'. Each KeyId may only appear once per state."),
+					i, *Req.KeyId.ToString()));
+			}
+			else
+			{
+				SeenKeyIds.Add(Req.KeyId);
+			}
+			
 			if (Req.MissingMessage.IsEmpty())
 			{
 				AddWarning(FString::Printf(TEXT("State '%s' RequiredKeys[%d] MissingMessage is empty."), *State.StateId.ToString(), r));
@@ -95,10 +111,16 @@ void UInteractionDataAsset::PostEditChangeProperty(FPropertyChangedEvent& Proper
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	// If DefaultStateId is None and we have states, set it to the first state id.
-	if (DefaultStateId.IsNone() && States.Num() > 0 && !States[0].StateId.IsNone())
+	if (DefaultStateId.IsNone() || !FindStateById(DefaultStateId))
 	{
-		DefaultStateId = States[0].StateId;
+		for (const FInteractionStateDefinition& State : States)
+		{
+			if (!State.StateId.IsNone())
+			{
+				DefaultStateId = State.StateId;
+				break;
+			}
+		}
 	}
 }
 

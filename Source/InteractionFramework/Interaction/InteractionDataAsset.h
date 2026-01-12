@@ -51,7 +51,7 @@ public:
 	}
 
 	/** Returns the default state definition (may be null if none defined). */
-	const FName GetDefaultStateId() const
+	FName GetDefaultStateId() const
 	{
 		// If DefaultStateId is set, try it first
 		if (!DefaultStateId.IsNone())
