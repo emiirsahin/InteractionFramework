@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactable.h"
+#include "InteractionDataAsset.h"
 #include "InteractableActorBase.generated.h"
 
 class UInteractionDataAsset;
@@ -45,7 +46,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interaction")
 	FName CurrentStateId = NAME_None;
 
-	/** Pointer into the current state. */
+	/** Copy of the current state. */
 	UPROPERTY(Transient)
 	FInteractionStateDefinition CurrentState;
 	

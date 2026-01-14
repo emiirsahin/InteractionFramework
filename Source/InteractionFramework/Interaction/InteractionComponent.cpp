@@ -5,7 +5,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "Interactable.h"
 
 UInteractionComponent::UInteractionComponent()
@@ -92,11 +91,11 @@ bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewR
 	UWorld* World = GetWorld();
 	if (!World) return false;
 
-	AActor* Owner = InteractorActor.Get();
-	if (!IsValid(Owner)) return false;
+	AActor* PawnOwner = InteractorActor.Get();
+	if (!IsValid(PawnOwner)) return false;
 
 	// Prefer owner controller viewpoint (For player-controlled pawns).
-	if (APawn* Pawn = Cast<APawn>(Owner))
+	if (APawn* Pawn = Cast<APawn>(PawnOwner))
 	{
 		if (AController* Controller = Pawn->GetController())
 		{
@@ -105,10 +104,9 @@ bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewR
 		}
 	}
 
-	// Fallback (single-player case).
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+	if (const AActor* Owner = GetOwner())
 	{
-		PC->GetPlayerViewPoint(OutViewLoc, OutViewRot);
+		Owner->GetActorEyesViewPoint(OutViewLoc, OutViewRot);
 		return true;
 	}
 
