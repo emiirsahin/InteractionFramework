@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "InteractionTypes.h"
+#include "Interaction/Data/InteractionTypes.h"
 #include "InteractionComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFocusChanged, AActor*, NewFocusedActor, AActor*, PreviousFocusedActor);
@@ -68,7 +68,7 @@ public:
 	UFUNCTION(BlueprintPure, Category="Interaction")
 	float GetHoldProgress() const;
 
-	// Performance
+	// Debug
 	UFUNCTION(BlueprintCallable, Category="Interaction|Debug")
 	void EnableInteraction();
 
@@ -81,6 +81,11 @@ public:
 	UFUNCTION(BlueprintPure, Category="Interaction|Debug")
 	bool IsInteractionEnabled() const { return bEnabled; }
 
+	UFUNCTION(BlueprintCallable, Category="Interaction|Debug")
+	void ToggleDebugOverlay();
+
+	void DebugPushSnapshot() const;
+	
 public:
 	// Scan configurations
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Scan")
@@ -103,13 +108,33 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|Hold")
 	float HoldTickInterval = 0.02f;
 
+	// Debug
+	UPROPERTY(Transient)
+	class UInteractionDebugHelper* DebugHelper = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category="Interaction|Debug")
+	bool bDebugOverlayEnabled = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Interaction|Debug")
+	bool bDebugDrawTrace = true;
+
+	UPROPERTY(EditDefaultsOnly, Category="Interaction|Debug")
+	float DebugDrawDuration = 0.06f;
+
+	FVector LastTraceStart = FVector::ZeroVector;
+	FVector LastTraceEnd = FVector::ZeroVector;
+	bool bLastTraceHit = false;
+	TWeakObjectPtr<AActor> LastHitActor;
+	FHitResult LastHitResult;
+	bool bLastHitWasInteractable = false;
+	
 private:
 	// Focus scanning
 	void StartFocusScan();
 	void StopFocusScan();
 	void PerformFocusScan();
 
-	bool FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable) const;
+	bool FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable);
 	bool GetViewPoint(FVector& OutViewLoc, FRotator& OutViewRot) const;
 
 	void SetFocused(AActor* NewActor, const TScriptInterface<IInteractable> NewInteractable);

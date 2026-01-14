@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Interactable.h"
+#include "Debug/InteractionDebugHelper.h"
 
 UInteractionComponent::UInteractionComponent()
 {
@@ -19,6 +20,12 @@ void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	DebugHelper = NewObject<UInteractionDebugHelper>(this);
+	DebugHelper->Initialize(this);
+	DebugHelper->SetDrawTrace(bDebugDrawTrace);
+	DebugHelper->SetDrawDuration(DebugDrawDuration);
+	DebugHelper->SetEnabled(bDebugOverlayEnabled);
+	
 	InteractorActor = GetOwner();
 	
 	StartFocusScan();
@@ -26,6 +33,11 @@ void UInteractionComponent::BeginPlay()
 
 void UInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (DebugHelper)
+	{
+		DebugHelper->SetEnabled(false);
+	}
+
 	StopFocusScan();
 	ResetHold();
 	ClearFocus();
@@ -84,6 +96,8 @@ void UInteractionComponent::PerformFocusScan()
 	{
 		SetFocused(NewActor, NewInteractable);
 	}
+
+	DebugPushSnapshot();
 }
 
 bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewRot) const
@@ -113,7 +127,8 @@ bool UInteractionComponent::GetViewPoint(FVector& OutViewLoc, FRotator& OutViewR
 	return false;
 }
 
-bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable) const
+bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInterface<IInteractable>& OutInteractable)
+
 {
 	OutActor = nullptr;
 	OutInteractable = nullptr;
@@ -127,6 +142,13 @@ bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInt
 
 	const FVector Start = ViewLoc;
 	const FVector End = Start + (ViewRot.Vector() * TraceDistance);
+
+	LastTraceStart = Start;
+	LastTraceEnd = End;
+	bLastTraceHit = false;
+	LastHitActor = nullptr;
+	LastHitResult = FHitResult();
+	bLastHitWasInteractable = false;
 
 	FCollisionQueryParams Params(SCENE_QUERY_STAT(InteractionTrace), false);
 	if (bIgnoreOwner && InteractorActor.IsValid())
@@ -161,6 +183,11 @@ bool UInteractionComponent::FindInteractableInView(AActor*& OutActor, TScriptInt
 
 	if (!HitActor->GetClass()->ImplementsInterface(UInteractable::StaticClass())) return false;
 
+	bLastTraceHit = true;
+	LastHitActor = HitActor;
+	LastHitResult = Hit;
+	bLastHitWasInteractable = true;
+	
 	OutActor = HitActor;
 	
 	OutInteractable.SetObject(HitActor);
@@ -221,6 +248,7 @@ void UInteractionComponent::RefreshQuery()
 		CachedQueryResult = FInteractionQueryResult{};
 		CachedQueryResult.bShouldShowPrompt = false;
 		OnQueryUpdated.Broadcast(CachedQueryResult);
+		DebugPushSnapshot();
 		return;
 	}
 
@@ -309,6 +337,8 @@ void UInteractionComponent::BeginHold(float DurationSeconds)
 		true
 	);
 
+	DebugPushSnapshot();
+	
 	OnHoldProgress.Broadcast(0.f);
 }
 
@@ -334,6 +364,8 @@ void UInteractionComponent::TickHold()
 	{
 		CompleteHold();
 	}
+	
+	DebugPushSnapshot();
 }
 
 void UInteractionComponent::CompleteHold()
@@ -344,6 +376,9 @@ void UInteractionComponent::CompleteHold()
 	}
 
 	ResetHold();
+	
+	DebugPushSnapshot();
+	
 	OnHoldCompleted.Broadcast();
 
 	ExecutePress();
@@ -365,6 +400,8 @@ void UInteractionComponent::ResetHold()
 		GetWorld()->GetTimerManager().ClearTimer(HoldTickTimer);
 	}
 
+	DebugPushSnapshot();
+	
 	OnHoldProgress.Broadcast(0.f);
 	OnHoldReset.Broadcast();
 }
@@ -406,4 +443,41 @@ void UInteractionComponent::ToggleInteraction()
 	{
 		EnableInteraction();
 	}
+}
+
+void UInteractionComponent::ToggleDebugOverlay()
+{
+	bDebugOverlayEnabled = !bDebugOverlayEnabled;
+	if (DebugHelper)
+	{
+		DebugHelper->SetEnabled(bDebugOverlayEnabled);
+		DebugPushSnapshot();
+	}
+}
+
+void UInteractionComponent::DebugPushSnapshot() const
+{
+	if (!DebugHelper || !DebugHelper->IsEnabled()) return;
+
+	FInteractionDebugSnapshot S;
+	S.Owner = GetOwner();
+	S.FocusedActor = FocusedActor;
+	S.TraceStart = LastTraceStart;
+	S.TraceEnd = LastTraceEnd;
+	S.bTraceHit = bLastTraceHit;
+	S.HitActor = LastHitActor;
+	S.HitResult = LastHitResult;
+
+	S.QueryResult = CachedQueryResult;
+
+	S.bEnabled = bEnabled;
+	S.bHolding = bIsHolding;
+	S.HoldProgress01 = GetHoldProgress();
+
+	S.ScanInterval = ScanInterval;
+	S.TraceDistance = TraceDistance;
+	S.TraceRadius = TraceRadius;
+	S.bHitWasInteractable = bLastHitWasInteractable;
+
+	DebugHelper->Update(S);
 }

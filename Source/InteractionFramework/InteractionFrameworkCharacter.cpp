@@ -68,6 +68,7 @@ void AInteractionFrameworkCharacter::SetupPlayerInputComponent(UInputComponent* 
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AInteractionFrameworkCharacter::HandleInteractStarted);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AInteractionFrameworkCharacter::HandleInteractCompleted);
 
+		EnhancedInputComponent->BindAction(EnableDisable, ETriggerEvent::Started, this, &AInteractionFrameworkCharacter::HandleEnableDisable);
 		EnhancedInputComponent->BindAction(DebugAction, ETriggerEvent::Started, this, &AInteractionFrameworkCharacter::HandleDebugAction);
 	}
 	else
@@ -145,10 +146,18 @@ void AInteractionFrameworkCharacter::HandleInteractCompleted(const FInputActionV
 	}
 }
 
-void AInteractionFrameworkCharacter::HandleDebugAction(const FInputActionValue& Value)
+void AInteractionFrameworkCharacter::HandleEnableDisable(const FInputActionValue& Value)
 {
 	if (InteractionComponent)
 	{
 		InteractionComponent->ToggleInteraction();
+	}
+}
+
+void AInteractionFrameworkCharacter::HandleDebugAction(const FInputActionValue& Value)
+{
+	if (InteractionComponent)
+	{
+		InteractionComponent->ToggleDebugOverlay();
 	}
 }

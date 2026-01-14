@@ -1,7 +1,5 @@
 
 #include "InteractableNpcActorBase.h"
-
-#include "InteractionUtils.h"
 #include "KeyringComponent.h"
 #include "NpcSpeechBubbleWidget.h"
 #include "Components/WidgetComponent.h"
@@ -72,7 +70,8 @@ FInteractionQueryResult AInteractableNpcActorBase::QueryInteraction_Implementati
 	Result.InputType = EInteractionInputType::Press;
 	Result.HoldDuration = 0.f;
 	Result.UnmetRequirementMessages.Reset(); // NPC doesn't show these
-
+	Result.UnmetRequirementNumber = GetMissingRequirements(Interactor);
+	
 	if (NpcData && !NpcData->PromptText.IsEmpty())
 		Result.PromptText = NpcData->PromptText;
 	else
@@ -81,8 +80,9 @@ FInteractionQueryResult AInteractableNpcActorBase::QueryInteraction_Implementati
 	return Result;
 }
 
-bool AInteractableNpcActorBase::GetMissingRequirements(AActor* Interactor) const
+int AInteractableNpcActorBase::GetMissingRequirements(AActor* Interactor) const
 {
+	int MissingNumber = 0;
 	if (!CurrentState.IsValid())
 	{
 		return false;
@@ -97,7 +97,15 @@ bool AInteractableNpcActorBase::GetMissingRequirements(AActor* Interactor) const
 	const UKeyringComponent* Keyring =
 		Interactor ? Interactor->FindComponentByClass<UKeyringComponent>() : nullptr;
 
-	return InteractionUtils::AreRequirementsMet(Reqs, Keyring);
+	for (const FInteractionKeyRequirement& Req : Reqs)
+	{
+		if (!Req.KeyId.IsNone() && !(Keyring && Keyring->HasKey(Req.KeyId)))
+		{
+			MissingNumber++;
+		}
+	}
+
+	return MissingNumber;
 }
 
 void AInteractableNpcActorBase::Interact_Implementation(AActor* Interactor)
@@ -107,7 +115,7 @@ void AInteractableNpcActorBase::Interact_Implementation(AActor* Interactor)
 		return;
 	}
 
-	const bool bMet = !GetMissingRequirements(Interactor);
+	const bool bMet = GetMissingRequirements(Interactor) == 0;
 
 	const FText LineToShow = bMet ? CurrentState.LineIfMet : CurrentState.LineIfMissing;
 	const float Duration = CurrentState.SpeechWidgetVisibleTime;

@@ -62,6 +62,10 @@ protected:
 
 	/** Toggle InteractionComponent */
 	UPROPERTY(EditAnywhere, Category ="Input")
+	class UInputAction* EnableDisable;
+
+	/** Toggle InteractionComponent */
+	UPROPERTY(EditAnywhere, Category ="Input")
 	class UInputAction* DebugAction;
 	
 public:
@@ -102,6 +106,9 @@ protected:
 	/** Handle Interact Action Release*/
 	void HandleInteractCompleted(const FInputActionValue& Value);
 
+	/** Handle EnableDisable Action Press*/
+	void HandleEnableDisable(const FInputActionValue& Value);
+	
 	/** Handle Debug Action Press*/
 	void HandleDebugAction(const FInputActionValue& Value);
 	

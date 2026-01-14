@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "InteractionTypes.h"
+#include "Interaction/Data/InteractionTypes.h"
 
 class UKeyringComponent;
 
@@ -12,9 +12,4 @@ namespace InteractionUtils
 		const TArray<FInteractionKeyRequirement>& Requirements,
 		const UKeyringComponent* Keyring,
 		TArray<FText>& OutMissingMessages);
-
-	// Returns true if any requirements are missing.
-	bool AreRequirementsMet(
-		const TArray<FInteractionKeyRequirement>& Requirements,
-		const UKeyringComponent* Keyring);
 }

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactable.h"
-#include "NpcInteractionDataAsset.h"
+#include "Interaction/Data/NpcInteractionDataAsset.h"
 #include "InteractableNpcActorBase.generated.h"
 
 class UWidgetComponent;
@@ -53,7 +53,7 @@ protected:
 
 	void InitializeNpcState();
 	bool CacheStateFromId(FName StateId);
-	bool GetMissingRequirements(AActor* Interactor) const;
+	int GetMissingRequirements(AActor* Interactor) const;
 
 	void ShowBubble(const FText& Line, float Duration);
 	void HideBubble();
