@@ -1,9 +1,10 @@
 
 #include "InteractableActorBase.h"
-#include "InteractionDataAsset.h"
-#include "InteractionTypes.h"
-#include "KeyringComponent.h"
+
 #include "InteractionUtils.h"
+#include "Interaction/Data/InteractionDataAsset.h"
+#include "Interaction/Data/InteractionTypes.h"
+#include "KeyringComponent.h"
 
 AInteractableActorBase::AInteractableActorBase()
 {
@@ -77,6 +78,7 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	if (CurrentState.RequiredKeys.Num() > 0)
 	{
 		GetMissingRequirementMessages(Interactor, Result.UnmetRequirementMessages);
+		Result.UnmetRequirementNumber = Result.UnmetRequirementMessages.Num();
 	}
 
 	return Result;

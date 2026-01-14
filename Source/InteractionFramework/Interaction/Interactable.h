@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "InteractionTypes.h"
+#include "Interaction/Data/InteractionTypes.h"
 #include "Interactable.generated.h"
 
 UINTERFACE(BlueprintType)

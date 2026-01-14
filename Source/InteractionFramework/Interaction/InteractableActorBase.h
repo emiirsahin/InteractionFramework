@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactable.h"
-#include "InteractionDataAsset.h"
+#include "Interaction/Data/InteractionDataAsset.h"
 #include "InteractableActorBase.generated.h"
 
 class UInteractionDataAsset;

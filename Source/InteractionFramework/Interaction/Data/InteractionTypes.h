@@ -66,6 +66,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Interaction")
 	TArray<FText> UnmetRequirementMessages;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Interaction")
+	int UnmetRequirementNumber;
+	
 	bool ShouldShowPrompt() const
 	{
 		return bShouldShowPrompt;
@@ -76,7 +79,8 @@ public:
 	const FText& InPromptText,
 	EInteractionInputType InInputType = EInteractionInputType::Press,
 	float InHoldDuration = 0.f,
-	const TArray<FText>& InUnmetMessages = TArray<FText>())
+	const TArray<FText>& InUnmetMessages = TArray<FText>(),
+	int InUnmetRequirementNumber = 0)
 	{
 		FInteractionQueryResult Result;
 		Result.bShouldShowPrompt = bInShouldShowPrompt;
@@ -84,6 +88,7 @@ public:
 		Result.InputType = InInputType;
 		Result.HoldDuration = (InInputType == EInteractionInputType::Hold) ? InHoldDuration : 0.f;
 		Result.UnmetRequirementMessages = InUnmetMessages;
+		Result.UnmetRequirementNumber = InUnmetRequirementNumber;
 		return Result;
 	}
 

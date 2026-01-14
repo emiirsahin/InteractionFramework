@@ -1,9 +1,9 @@
 ﻿#if WITH_AUTOMATION_TESTS
 
+#include "Interaction/InteractionUtils.h"
 #include "Misc/AutomationTest.h"
-#include "KeyringComponent.h"
-#include "InteractionDataAsset.h"
-#include "InteractionUtils.h"
+#include "Interaction/KeyringComponent.h"
+#include "Interaction/Data/InteractionDataAsset.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FKeyring_AddRemove,
 	"InteractionFramework.Keyring.AddRemove",
