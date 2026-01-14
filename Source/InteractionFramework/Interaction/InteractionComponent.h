@@ -19,9 +19,7 @@ class IInteractable;
  * The component depends only on the IInteractable interface.
  *
  * UI should listen to OnQueryUpdated and OnHoldProgress.
- * QueryInteraction is called:
- *  - whenever focus changes
- *  - repeatedly while focused (every ScanInterval) to keep UI correct. This can be updated to use delegates instead.
+ * QueryInteraction is called whenever focus changes and whenever the player interacts with the object
  */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class INTERACTIONFRAMEWORK_API UInteractionComponent : public UActorComponent

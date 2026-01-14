@@ -1,5 +1,7 @@
 
 #include "InteractableNpcActorBase.h"
+
+#include "InteractionUtils.h"
 #include "KeyringComponent.h"
 #include "NpcSpeechBubbleWidget.h"
 #include "Components/WidgetComponent.h"
@@ -8,6 +10,7 @@ AInteractableNpcActorBase::AInteractableNpcActorBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SpeechBubbleComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("SpeechBubble"));
 	SpeechBubbleComponent->SetupAttachment(RootComponent);
 
@@ -80,8 +83,6 @@ FInteractionQueryResult AInteractableNpcActorBase::QueryInteraction_Implementati
 
 bool AInteractableNpcActorBase::GetMissingRequirements(AActor* Interactor) const
 {
-	bool bHasMissing = false;
-	
 	if (!CurrentState.IsValid())
 	{
 		return false;
@@ -96,21 +97,7 @@ bool AInteractableNpcActorBase::GetMissingRequirements(AActor* Interactor) const
 	const UKeyringComponent* Keyring =
 		Interactor ? Interactor->FindComponentByClass<UKeyringComponent>() : nullptr;
 
-	for (const FInteractionKeyRequirement& Req : Reqs)
-	{
-		if (Req.KeyId.IsNone())
-		{
-			continue;
-		}
-
-		const bool bHasKey = (Keyring && Keyring->HasKey(Req.KeyId));
-		if (!bHasKey)
-		{
-			bHasMissing = true;
-		}
-	}
-
-	return bHasMissing;
+	return InteractionUtils::AreRequirementsMet(Reqs, Keyring);
 }
 
 void AInteractableNpcActorBase::Interact_Implementation(AActor* Interactor)

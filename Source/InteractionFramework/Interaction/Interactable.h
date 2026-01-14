@@ -4,7 +4,6 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "InteractionTypes.h"
-#include "InteractionDataAsset.h"
 #include "Interactable.generated.h"
 
 UINTERFACE(BlueprintType)
@@ -26,7 +25,7 @@ class UInteractable : public UInterface
  * those concerns are managed externally by the interaction system, and mainly the interaction component.
  */
 
-DEFINE_LOG_CATEGORY_STATIC(LogInteractionFramework, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LogInteractionFramework, Log, All);
 
 class INTERACTIONFRAMEWORK_API IInteractable
 {

@@ -3,6 +3,7 @@
 #include "InteractionDataAsset.h"
 #include "InteractionTypes.h"
 #include "KeyringComponent.h"
+#include "InteractionUtils.h"
 
 AInteractableActorBase::AInteractableActorBase()
 {
@@ -99,21 +100,7 @@ bool AInteractableActorBase::GetMissingRequirementMessages(AActor* Interactor, T
 	const UKeyringComponent* Keyring =
 		Interactor ? Interactor->FindComponentByClass<UKeyringComponent>() : nullptr;
 
-	for (const FInteractionKeyRequirement& Req : Reqs)
-	{
-		if (Req.KeyId.IsNone())
-		{
-			continue;
-		}
-
-		const bool bHasKey = (Keyring && Keyring->HasKey(Req.KeyId));
-		if (!bHasKey)
-		{
-			OutMissingMessages.Add(Req.MissingMessage);
-		}
-	}
-
-	return OutMissingMessages.Num() > 0;
+	return InteractionUtils::BuildMissingMessages(Reqs, Keyring, OutMissingMessages);
 }
 
 
