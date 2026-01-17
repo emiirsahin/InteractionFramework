@@ -73,6 +73,11 @@ The framework is built around a component and interface-driven architecture:
 - **`KeyringComponent`:** Stores acquired keys and evaluates requirements.
 - **UI Widgets:** Interaction prompts and NPC speech bubbles are driven by data, not hardcoded logic.
 
+## Architecture Diagram
+
+The diagram below provides a high-level overview of the interaction framework
+
+[![Interaction Framework Architecture](Docs/interaction_framework_architecture.png)](Docs/interaction_framework_architecture.png)
 
 ## Design Goals and Scope
 
