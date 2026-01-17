@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
 	float SpeechWidgetVisibleTime;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="NPC|State")
+	bool bShouldShowRequirements = true;
+
 	bool IsValid() const { return !StateId.IsNone(); }
 };
 

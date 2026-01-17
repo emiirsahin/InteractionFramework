@@ -71,6 +71,7 @@ FInteractionQueryResult AInteractableNpcActorBase::QueryInteraction_Implementati
 	Result.HoldDuration = 0.f;
 	Result.UnmetRequirementMessages.Reset(); // NPC doesn't show these
 	Result.UnmetRequirementNumber = GetMissingRequirements(Interactor);
+	Result.bShouldShowRequirements = CurrentState.bShouldShowRequirements;
 	
 	if (NpcData && !NpcData->PromptText.IsEmpty())
 		Result.PromptText = NpcData->PromptText;

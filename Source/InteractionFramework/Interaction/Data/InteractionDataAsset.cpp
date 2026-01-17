@@ -47,9 +47,9 @@ EDataValidationResult UInteractionDataAsset::IsDataValid(FDataValidationContext&
 			Seen.Add(State.StateId);
 		}
 
-		if (State.bShouldShowPrompt && State.PromptText.IsEmpty())
+		if (PromptOverridePolicy == EInteractionPromptOverride::ForceShow && State.PromptText.IsEmpty() || PromptOverridePolicy == EInteractionPromptOverride::UsePerState && State.bShouldShowPrompt && State.PromptText.IsEmpty())
 		{
-			AddWarning(FString::Printf(TEXT("State '%s' has bShouldShowPrompt=true but PromptText is empty."), *State.StateId.ToString()));
+			AddWarning(FString::Printf(TEXT("State '%s' must show prompt but PromptText is empty."), *State.StateId.ToString()));
 		}
 
 		if (State.InputType == EInteractionInputType::Hold && State.HoldDuration <= 0.f)
