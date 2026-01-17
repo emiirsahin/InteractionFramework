@@ -43,6 +43,9 @@ struct FInteractionStateDefinition
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
 	bool bShouldShowPrompt = true;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Interaction|State")
+	bool bShouldShowRequirements = true;
+
 	/** State is valid if it has a non-None id. */
 	bool IsValid() const { return !StateId.IsNone(); }
 };

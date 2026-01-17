@@ -73,6 +73,7 @@ FInteractionQueryResult AInteractableActorBase::QueryInteraction_Implementation(
 	Result.PromptText        = CurrentState.PromptText;
 	Result.InputType         = CurrentState.InputType;
 	Result.HoldDuration      = CurrentState.HoldDuration;
+	Result.bShouldShowRequirements = CurrentState.bShouldShowRequirements;
 
 	// Only do requirement check if there are any requirements
 	if (CurrentState.RequiredKeys.Num() > 0)
