@@ -21,6 +21,8 @@ The included demo level is designed as a single-room apartment with everyday obj
 - Modular UI prompts decoupled from interaction logic
 - Debug and validation utilities for development
 - Press and hold interaction options
+- Debug overlay for live interactable inspection (toggle with `2`)
+- Interaction system enable/disable toggle for perf comparisons (toggle with `1`)
 
 
 ## Demo Walkthrough
@@ -75,7 +77,7 @@ The framework is built around a component and interface-driven architecture:
 
 ## Architecture Diagram
 
-The diagram below provides a high-level overview of the interaction framework
+The diagram below provides a high-level overview of the interaction framework.
 
 [![Interaction Framework Architecture](Docs/interaction_framework_architecture.png)](Docs/interaction_framework_architecture.png)
 
@@ -88,6 +90,7 @@ Out of scope by design:
 - Branching dialogue trees
 - Narrative scripting
 - A full game loop
+- Multiplayer/replication support
 
 The focus is on creating a clean, extensible interaction foundation that can
 be reused or extended in larger projects.
@@ -101,10 +104,28 @@ The system is designed to be easily extended by:
 - Customizing per-interactable behavior through BP hooks (interaction success or failure)
 - Customizing prompts and UI behavior without code changes
 
+## Debug and Testing
+
+- The debug overlay displays information about world actors that implement `IInteractable` and can be toggled with the `2` key.
+- The `1` key toggles the interaction component to disable the system entirely for performance comparisons.
+- Automation tests are included to validate core behaviors.
+
+## Potential Improvements
+
+- Interaction states could be modeled as their own reusable objects and swapped between data assets.
+- Requirement logic could expand beyond the current "AND" relationship between required keys.
+- Shared `IInteractable` behavior could be factored into a dedicated actor component used by multiple classes.
+- Focused actor selection could be driven by a score-based system.
+- Keys are stored in a set, so the player cannot hold more than one of the same key.
+
+## Demo Video
+
+A walkthrough video will be added here.
+
 
 ## Author
 
 Developed by Emir Şahin.
 
-This project was created as a portfolio piece to demonstrate
+This project was created as a portfolio piece to demonstrate 
 gameplay and systems programming practices in Unreal Engine.
