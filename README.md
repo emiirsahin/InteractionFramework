@@ -120,7 +120,7 @@ The system is designed to be easily extended by:
 
 ## Demo Video
 
-A walkthrough video will be added here.
+- **Demo Walkthrough:** https://www.youtube.com/watch?v=5FLCxvy-JAc
 
 
 ## Author
