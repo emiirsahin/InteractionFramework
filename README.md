@@ -120,8 +120,8 @@ The system is designed to be easily extended by:
 
 ## Demo Video
 
-- **Demo Walkthrough:** https://www.youtube.com/watch?v=5FLCxvy-JAc
-
+- **Demo Walkthrough:** https://youtu.be/5FLCxvy-JAc
+- **Debug Overlay Showcase:** https://youtu.be/rCfUOkukJ90
 
 ## Author
 
